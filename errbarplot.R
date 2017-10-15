@@ -1,4 +1,4 @@
-# Author: julian.zhou@yale.edu
+# Author: Julian Zhou @julianqz
 
 # Function to plot barplot of means and standard error bars
 # Input:
