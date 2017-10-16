@@ -6,6 +6,7 @@
 # - ses: a vector of standard errors to be plotted as error bars
 # - widths: passed to barplot() for 'width'; see ?barplot for details
 # - spaces: passed to barplot() for 'space'; see ?barplot for details
+# - horizontal: passed to barplot() for 'horiz'; if TRUE, layout will be horizontal
 # - err.bar.col: color of the error bars
 # - err.bar.lty: line type of the error bars
 # - err.bar.lwd: line thickness of the error bars
