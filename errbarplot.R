@@ -1,6 +1,7 @@
 # Author: Julian Zhou @julianqz
 
 # Function to plot barplot of means and standard error bars
+# Based on barplot() and accepts arguments for barplot() via '...'
 # Input:
 # - means: a vector of means to be plotted; passed to barplot () for 'heights'
 # - ses: a vector of standard errors to be plotted as error bars
@@ -15,6 +16,7 @@
 # - ...: additional arguments to be passed to barplot(); see ?barplot for details
 # Output:
 # - A barplot of means with standard error bars indicated around the means
+# - If return.bar.x=TRUE, coordinates of the error bars (i.e. centers of the mean bars)
 # Note:
 # - return.bar.x=TRUE might be helpful for customizing x-axis labels (see example below)
 # - 'height', 'width', 'space', and 'horiz' should not be passed as part of '...' to barplot()
@@ -133,7 +135,7 @@ if (run.test) {
     
     # Basic example
     # Positive means
-    # Notice that border, col, xlab, and ylab are passed to barplot
+    # Notice that border, col, xlab, and ylab are passed to barplot()
     # Vertical bars
     errbarplot(means, ses, widths=2, spaces=0.5, horizontal=FALSE,
                err.bar.col="hotpink", err.bar.lty=3, err.bar.lwd=2, err.bar.pch=18, 
