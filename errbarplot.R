@@ -8,6 +8,7 @@
 # - widths: passed to barplot() for 'width'; see ?barplot for details
 # - spaces: passed to barplot() for 'space'; see ?barplot for details
 # - horizontal: passed to barplot() for 'horiz'; if TRUE, layout will be horizontal
+# - ymax.excess: the fraction to multiply ymax by for adjusting ylim; must be >=1
 # - err.bar.col: color of the error bars
 # - err.bar.lty: line type of the error bars
 # - err.bar.lwd: line thickness of the error bars
@@ -19,10 +20,11 @@
 # - If return.bar.x=TRUE, coordinates of the error bars (i.e. centers of the mean bars)
 # Note:
 # - return.bar.x=TRUE might be helpful for customizing x-axis labels (see example below)
-# - 'height', 'width', 'space', and 'horiz' should not be passed as part of '...' to barplot()
+# - 'height', 'width', 'space', and 'horiz', 'ylim', 'xlim' should not be passed as 
+#   part of '...' to barplot()
 # Examples:
 # - See the 'Testing' section below
-errbarplot = function(means, ses, widths=1, spaces=0.2, horizontal=FALSE,
+errbarplot = function(means, ses, widths=1, spaces=0.2, horizontal=FALSE, ymax.excess=1.02,
                       err.bar.col=1, err.bar.lty=1, err.bar.lwd=1, err.bar.pch=16,
                       return.bar.x=FALSE,
                       ...) {
@@ -31,6 +33,7 @@ errbarplot = function(means, ses, widths=1, spaces=0.2, horizontal=FALSE,
     stopifnot(n==length(ses))
     stopifnot( (length(widths)==n) | (length(widths)==1) )
     stopifnot( (length(spaces)==n) | (length(spaces)==1) )
+    stopifnot(ymax.excess>=1)
     
     ### ylim after taking into account of SEs
     ymax = max(means+ses, na.rm=T)
@@ -59,7 +62,7 @@ errbarplot = function(means, ses, widths=1, spaces=0.2, horizontal=FALSE,
         ## horizontal bars
         barplot(height=means, width=widths, space=spaces, horiz=horizontal,
                 # 0.3 instead of 0 in order for lwd effect of abline at zero to show  
-                xlim=c(min(1.02*ymin, -0.3), max(0.3, 1.02*ymax)), #*
+                xlim=c(min(ymax.excess*ymin, -0.3), max(0.3, ymax.excess*ymax)), #*
                 ylim=c(0, 1.02*(sum(widths)+sum(spaces.abs))), 
                 ...)
         abline(v=0, lwd=2)
@@ -67,7 +70,7 @@ errbarplot = function(means, ses, widths=1, spaces=0.2, horizontal=FALSE,
         ## vertical bars
         barplot(height=means, width=widths, space=spaces, horiz=horizontal,
                 # 0.3 instead of 0 in order for lwd effect of abline at zero to show  
-                ylim=c(min(1.02*ymin, -0.3), max(0.3, 1.02*ymax)), #*
+                ylim=c(min(ymax.excess*ymin, -0.3), max(0.3, ymax.excess*ymax)), #*
                 xlim=c(0, 1.02*(sum(widths)+sum(spaces.abs))), 
                 ...)
         abline(h=0, lwd=2)
