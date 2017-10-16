@@ -15,11 +15,11 @@
 # Output:
 # - A barplot of means with standard error bars indicated around the means
 # Note:
-# - IMPORTANT: Only vertical bars are currently supported (i.e. do not specify horiz=TRUE)
 # - return.bar.x=TRUE might be helpful for customizing x-axis labels (see example below)
+# - 'height', 'width', 'space', and 'horiz' should not be passed as part of '...' to barplot()
 # Examples:
 # - See the 'Testing' section below
-errbarplot = function(means, ses, widths=1, spaces=0.2,
+errbarplot = function(means, ses, widths=1, spaces=0.2, horizontal=FALSE,
                       err.bar.col=1, err.bar.lty=1, err.bar.lwd=1, err.bar.pch=16,
                       return.bar.x=FALSE,
                       ...) {
@@ -52,12 +52,24 @@ errbarplot = function(means, ses, widths=1, spaces=0.2,
     
     ### base barplot
     # per ?barplot, single-number input of width will have no effect unless xlim is set
-    barplot(height=means, width=widths, space=spaces, 
-            # 0.3 instead of 0 in order for lwd effect of abline at zero to show  
-            ylim=c(min(1.02*ymin, -0.3), max(0.3, 1.02*ymax)), #*
-            xlim=c(0, 1.02*(sum(widths)+sum(spaces.abs))), 
-            ...)
-    abline(h=0, lwd=2)
+    if (horizontal) {
+        ## horizontal bars
+        barplot(height=means, width=widths, space=spaces, horiz=horizontal,
+                # 0.3 instead of 0 in order for lwd effect of abline at zero to show  
+                xlim=c(min(1.02*ymin, -0.3), max(0.3, 1.02*ymax)), #*
+                ylim=c(0, 1.02*(sum(widths)+sum(spaces.abs))), 
+                ...)
+        abline(v=0, lwd=2)
+    } else {
+        ## vertical bars
+        barplot(height=means, width=widths, space=spaces, horiz=horizontal,
+                # 0.3 instead of 0 in order for lwd effect of abline at zero to show  
+                ylim=c(min(1.02*ymin, -0.3), max(0.3, 1.02*ymax)), #*
+                xlim=c(0, 1.02*(sum(widths)+sum(spaces.abs))), 
+                ...)
+        abline(h=0, lwd=2)
+    }
+    
     
     ### error bars
     err.ub = means+ses
@@ -70,19 +82,38 @@ errbarplot = function(means, ses, widths=1, spaces=0.2,
     for (i in 1:n) {
         # width of error bar
         err.width = widths[i]*0.1 #*
-        # upper bound (won't show if UB is NA)
-        segments(x0=se.x[i]-err.width, x1=se.x[i]+err.width, 
-                 y0=err.ub[i], y1=err.ub[i], 
-                 col=err.bar.col, lty=err.bar.lty, lwd=err.bar.lwd)
-        # lower bound (won't show if LB is NA)
-        segments(x0=se.x[i]-err.width, x1=se.x[i]+err.width, 
-                 y0=err.lb[i], y1=err.lb[i],
-                 col=err.bar.col, lty=err.bar.lty, lwd=err.bar.lwd)
-        # vertical line connecting UB and LB (won't show if either UB or LB is NA)
-        segments(x0=se.x[i], x1=se.x[i], y0=err.lb[i], y1=err.ub[i],
-                 col=err.bar.col, lty=err.bar.lty, lwd=err.bar.lwd)
-        # dot for mean (won't show if mean is NA)
-        points(se.x[i], means[i], col=err.bar.col, lwd=err.bar.lwd, pch=err.bar.pch)
+        
+        if (horizontal) {
+            ## horizontal bars
+            # upper bound (won't show if UB is NA)
+            segments(y0=se.x[i]-err.width, y1=se.x[i]+err.width, 
+                     x0=err.ub[i], x1=err.ub[i], 
+                     col=err.bar.col, lty=err.bar.lty, lwd=err.bar.lwd)
+            # lower bound (won't show if LB is NA)
+            segments(y0=se.x[i]-err.width, y1=se.x[i]+err.width, 
+                     x0=err.lb[i], x1=err.lb[i],
+                     col=err.bar.col, lty=err.bar.lty, lwd=err.bar.lwd)
+            # vertical line connecting UB and LB (won't show if either UB or LB is NA)
+            segments(y0=se.x[i], y1=se.x[i], x0=err.lb[i], x1=err.ub[i],
+                     col=err.bar.col, lty=err.bar.lty, lwd=err.bar.lwd)
+            # dot for mean (won't show if mean is NA)
+            points(means[i], se.x[i], col=err.bar.col, lwd=err.bar.lwd, pch=err.bar.pch)
+        } else {
+            ## vertical bars
+            # upper bound (won't show if UB is NA)
+            segments(x0=se.x[i]-err.width, x1=se.x[i]+err.width, 
+                     y0=err.ub[i], y1=err.ub[i], 
+                     col=err.bar.col, lty=err.bar.lty, lwd=err.bar.lwd)
+            # lower bound (won't show if LB is NA)
+            segments(x0=se.x[i]-err.width, x1=se.x[i]+err.width, 
+                     y0=err.lb[i], y1=err.lb[i],
+                     col=err.bar.col, lty=err.bar.lty, lwd=err.bar.lwd)
+            # vertical line connecting UB and LB (won't show if either UB or LB is NA)
+            segments(x0=se.x[i], x1=se.x[i], y0=err.lb[i], y1=err.ub[i],
+                     col=err.bar.col, lty=err.bar.lty, lwd=err.bar.lwd)
+            # dot for mean (won't show if mean is NA)
+            points(se.x[i], means[i], col=err.bar.col, lwd=err.bar.lwd, pch=err.bar.pch)
+        }
     }
     
     if (return.bar.x) {return(se.x)}
@@ -96,37 +127,58 @@ if (run.test) {
     # Generate means and SEs
     set.seed(79582)
     means = runif(n=5, min=30, max=100)
-    ses = rnorm(n=5, mean=7, sd=3)
+    names(means) = LETTERS[1:length(means)]
+    ses = rexp(n=5, rate=1/6)
     
-    # Basic example (all means are positive)
-    # Notice that border, col, names.arg, xlab, and ylab are passed to barplot
-    errbarplot(means, ses, widths=2, spaces=0.5, err.bar.col="hotpink", err.bar.lty=3, 
-               err.bar.lwd=2, err.bar.pch=18, 
-               border=NA, col="skyblue",
-               names.arg=LETTERS[1:5], xlab="Group", ylab="Mean")
+    # Basic example
+    # Positive means
+    # Notice that border, col, xlab, and ylab are passed to barplot
+    # Vertical bars
+    errbarplot(means, ses, widths=2, spaces=0.5, horizontal=FALSE,
+               err.bar.col="hotpink", err.bar.lty=3, err.bar.lwd=2, err.bar.pch=18, 
+               border=NA, col="skyblue", xlab="Group", ylab="Mean")
+    # Horizontal bars
+    errbarplot(means, ses, widths=2, spaces=0.5, horizontal=TRUE,
+               err.bar.col="hotpink", err.bar.lty=3, err.bar.lwd=2, err.bar.pch=18, 
+               border=NA, col="skyblue", xlab="Group", ylab="Mean")
     
     # Negative means
-    errbarplot(-means, ses)
+    errbarplot(-means, ses, horizontal=FALSE)
+    errbarplot(-means, ses, horizontal=TRUE)
     
     # A mixture of positive and negative means
-    errbarplot(c(means[1:2], -means[3], means[4:5]), ses)
+    errbarplot(c(means[1:2], -means[3], means[4:5]), ses, horizontal=FALSE)
+    errbarplot(c(means[1:2], -means[3], means[4:5]), ses, horizontal=TRUE)
     
     # Large SE
-    errbarplot(means, c(100, ses[2:5]))
-    errbarplot(-means, c(100, ses[2:5]))
-    errbarplot(c(means[1:2], -means[3], means[4:5]), c(100, ses[2:5]))
+    errbarplot(means, c(100, ses[2:5]), horizontal=FALSE)
+    errbarplot(means, c(100, ses[2:5]), horizontal=TRUE)
+    
+    errbarplot(-means, c(100, ses[2:5]), horizontal=FALSE)
+    errbarplot(-means, c(100, ses[2:5]), horizontal=TRUE)
+    
+    errbarplot(c(means[1:2], -means[3], means[4:5]), c(100, ses[2:5]), horizontal=FALSE)
+    errbarplot(c(means[1:2], -means[3], means[4:5]), c(100, ses[2:5]), horizontal=TRUE)
     
     # NAs allowed
     # One of the means and its corresponding SE are NA
-    errbarplot(c(means[1:2], NA, means[3:5]), c(ses[1:2], NA, ses[3:5]))
+    errbarplot(c(means[1:2], NA, means[3:5]), c(ses[1:2], NA, ses[3:5]), horizontal=FALSE)
+    errbarplot(c(means[1:2], NA, means[3:5]), c(ses[1:2], NA, ses[3:5]), horizontal=TRUE)
     # One of the SE is NA (for whatever reason)
-    errbarplot(c(means[1:2], 35, means[3:5]), c(ses[1:2], NA, ses[3:5]))
+    errbarplot(c(means[1:2], 35, means[3:5]), c(ses[1:2], NA, ses[3:5]), horizontal=FALSE)
+    errbarplot(c(means[1:2], 35, means[3:5]), c(ses[1:2], NA, ses[3:5]), horizontal=TRUE)
     # One of the mean is NA even though SE isn't (unlikely scenario; for demonstration only)
-    errbarplot(c(means[1:2], NA, means[3:5]), c(ses[1:2], 2, ses[3:5]))
+    errbarplot(c(means[1:2], NA, means[3:5]), c(ses[1:2], 2, ses[3:5]), horizontal=FALSE)
+    errbarplot(c(means[1:2], NA, means[3:5]), c(ses[1:2], 2, ses[3:5]), horizontal=TRUE)
     
     # Using return.bar.x to help customize x-axis labels
     par(mar=c(7,4,2,2))
-    bar.x = errbarplot(means, ses, border=NA, return.bar.x=T, ylab="Mean")
+    bar.x = errbarplot(means, ses, horizontal=F, border=NA, return.bar.x=T, ylab="Mean", names.arg="")
     axis(side=1, at=bar.x, labels=paste("Group", LETTERS[1:5]), tick=F, las=2)
     mtext(text="Focus Groups", side=1, line=5)
+    
+    par(mar=c(5,7,2,2))
+    bar.x = errbarplot(means, ses, horizontal=T, border=NA, return.bar.x=T, xlab="Mean", names.arg="")
+    axis(side=2, at=bar.x, labels=paste("Group", LETTERS[1:5]), tick=F, las=2)
+    mtext(text="Focus Groups", side=2, line=5)
 }
