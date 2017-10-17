@@ -40,8 +40,8 @@ errbarplot = function(means, ses, widths=1, spaces=0.2, horizontal=FALSE, ymax.e
     ymin = min(means-ses, na.rm=T)
     
     ### x-coords of error bars
-    if (length(widths)==1) {widths=rep(widths, n)}
-    if (length(spaces)==1) {spaces=rep(spaces, n)}
+    if (length(widths)!=n) {widths=rep(widths, length.out=n)}
+    if (length(spaces)!=n) {spaces=rep(spaces, length.out=n)}
     # space, as defined in ?barplot, is a fraction based off width
     # convert fraction to absolute amount of space
     spaces.abs = widths * spaces
